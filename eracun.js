@@ -47,6 +47,12 @@ function davcnaStopnja(izvajalec, zanr) {
 
 // Prikaz seznama pesmi na strani
 streznik.get('/', function(zahteva, odgovor) {
+  
+  if (zahteva.session.izbranaStranka == null){
+    odgovor.redirect('/prijava');
+    return;
+  }
+      
   pb.all("SELECT Track.TrackId AS id, Track.Name AS pesem, \
           Artist.Name AS izvajalec, Track.UnitPrice * " +
           razmerje_usd_eur + " AS cena, \
@@ -198,8 +204,8 @@ var vrniRacune = function(callback) {
 // Registracija novega uporabnika
 streznik.post('/prijava', function(zahteva, odgovor) {
   var form = new formidable.IncomingForm();
-  
   form.parse(zahteva, function (napaka1, polja, datoteke) {
+    zahteva.session.izbranaStranka = polja.seznamStrank;
     var napaka2 = false;
     try {
       var stmt = pb.prepare("\
@@ -239,6 +245,7 @@ streznik.post('/stranka', function(zahteva, odgovor) {
 
 // Odjava stranke
 streznik.post('/odjava', function(zahteva, odgovor) {
+    zahteva.session.izbranaStranka=null;
     odgovor.redirect('/prijava') 
 })
 
